@@ -53,6 +53,10 @@ public class StepPsiReference implements PsiPolyVariantReference {
 
     @Override
     public PsiElement resolve() {
+        JBehaveStepsIndex index = JBehaveStepsIndex.getInstance(myStep.getProject());
+        PsiElement resultFromStory = index.findStepDefinitionsInStory(myStep);
+        if (resultFromStory != null)
+            return resultFromStory;
         ResolveResult[] result = multiResolve(true);
         return result.length == 1 ? result[0].getElement() : null;
     }

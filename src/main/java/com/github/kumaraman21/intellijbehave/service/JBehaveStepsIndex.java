@@ -1,20 +1,9 @@
 package com.github.kumaraman21.intellijbehave.service;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.github.kumaraman21.intellijbehave.kotlin.KotlinConfigKt;
 import com.github.kumaraman21.intellijbehave.kotlin.support.services.KotlinAnnotationsLoader;
 import com.github.kumaraman21.intellijbehave.parser.JBehaveStep;
+import com.github.kumaraman21.intellijbehave.parser.StoryFile;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.module.Module;
@@ -23,8 +12,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.java.stubs.index.JavaAnnotationIndex;
 import com.intellij.psi.impl.java.stubs.index.JavaFullClassNameIndex;
+import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.QualifiedName;
 import com.intellij.util.ReflectionUtil;
@@ -33,6 +25,13 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 /**
  * Project service that provides Java step definitions for JBehave Story steps.
@@ -70,6 +69,27 @@ public final class JBehaveStepsIndex {
         }
 
         return definitionsByClass.values();
+    }
+
+    public PsiElement findStepDefinitionsInStory(@NotNull JBehaveStep step) {
+        Module module = ModuleUtilCore.findModuleForPsiElement(step);
+        GlobalSearchScope searchScope = module.getModuleWithDependenciesAndLibrariesScope(true);
+
+        String stepText = step.getStepText();
+        PsiElement story = null;
+        String str = "загрузить историю";
+        if (stepText.contains(str)) {
+            String[] textSplited = stepText.split("/");
+            String storyName = textSplited[textSplited.length-1];
+            if (!storyName.contains(".story"))
+                storyName += ".story";
+            Project project = module.getProject();
+            PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, storyName, searchScope);
+            if (psiFiles.length != 1)
+                return null;
+            story = ((StoryFile) psiFiles[0]).getStory();
+        }
+        return story;
     }
 
     @NotNull

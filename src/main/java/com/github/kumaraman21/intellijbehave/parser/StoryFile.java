@@ -64,7 +64,7 @@ public class StoryFile extends PsiFileBase {
         return Stream.of(scenarioNodes).map(ASTNode::getPsi).collect(Collectors.toList());
     }
 
-    private PsiElement getStory() {
+    public PsiElement getStory() {
         ASTNode[] storyNodes = this.getNode().getChildren(TokenSet.create(STORY));
         return storyNodes.length > 0 ? storyNodes[0].getPsi() : null;
     }
