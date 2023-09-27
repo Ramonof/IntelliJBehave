@@ -72,24 +72,37 @@ public final class JBehaveStepsIndex {
     }
 
     public PsiElement findStepDefinitionsInStory(@NotNull JBehaveStep step) {
-        Module module = ModuleUtilCore.findModuleForPsiElement(step);
-        GlobalSearchScope searchScope = module.getModuleWithDependenciesAndLibrariesScope(true);
+        try {
+            Module module = ModuleUtilCore.findModuleForPsiElement(step);
+            GlobalSearchScope searchScope = module.getModuleWithDependenciesAndLibrariesScope(true);
 
-        String stepText = step.getStepText();
-        PsiElement story = null;
-        String str = "загрузить историю";
-        if (stepText.contains(str)) {
-            String[] textSplited = stepText.split("/");
-            String storyName = textSplited[textSplited.length-1];
-            if (!storyName.contains(".story"))
-                storyName += ".story";
-            Project project = module.getProject();
-            PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, storyName, searchScope);
-            if (psiFiles.length != 1)
-                return null;
-            story = ((StoryFile) psiFiles[0]).getStory();
+            String stepText = step.getStepText();
+            PsiElement story = null;
+            if (stepText.contains("загрузить историю")) {
+                String[] textSplited = stepText.split("/");
+                String storyName = textSplited[textSplited.length - 1];
+                if (!storyName.contains(".story"))
+                    storyName += ".story";
+                Project project = module.getProject();
+                PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, storyName, searchScope);
+                if (psiFiles.length != 1)
+                    return null;
+                story = ((StoryFile) psiFiles[0]).getStory();
+            } else if (stepText.contains("История ->") || stepText.contains("история ->")) {
+                String[] textSplited = stepText.split("->");
+                String storyName = textSplited[textSplited.length - 1].trim();
+                if (!storyName.contains(".story"))
+                    storyName += ".story";
+                Project project = module.getProject();
+                PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, storyName, searchScope);
+                if (psiFiles.length != 1)
+                    return null;
+                story = ((StoryFile) psiFiles[0]).getStory();
+            }
+            return story;
+        } catch (Exception e) {
+            return null;
         }
-        return story;
     }
 
     @NotNull
