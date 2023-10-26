@@ -54,7 +54,7 @@ public class StepPsiReference implements PsiPolyVariantReference {
     @Override
     public PsiElement resolve() {
         JBehaveStepsIndex index = JBehaveStepsIndex.getInstance(myStep.getProject());
-        PsiElement resultFromStory = index.findStepDefinitionsInStory(myStep);
+        PsiElement resultFromStory = index.findStepDefinitionsInStory(myStep, null);
         if (resultFromStory != null)
             return resultFromStory;
 
@@ -112,6 +112,12 @@ public class StepPsiReference implements PsiPolyVariantReference {
     public Collection<JavaStepDefinition> resolveToDefinitions() {
         JBehaveStepsIndex index = JBehaveStepsIndex.getInstance(myStep.getProject());
         return index.findStepDefinitions(myStep);
+    }
+
+    public PsiElement resolveToDefinitionStory(Boolean[] isLoadStory) {
+        JBehaveStepsIndex index = JBehaveStepsIndex.getInstance(myStep.getProject());
+
+        return index.findStepDefinitionsInStory(myStep, isLoadStory);
     }
 
     @NotNull

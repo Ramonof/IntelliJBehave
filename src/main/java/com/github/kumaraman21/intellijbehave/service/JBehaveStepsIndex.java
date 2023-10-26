@@ -71,7 +71,7 @@ public final class JBehaveStepsIndex {
         return definitionsByClass.values();
     }
 
-    public PsiElement findStepDefinitionsInStory(@NotNull JBehaveStep step) {
+    public PsiElement findStepDefinitionsInStory(@NotNull JBehaveStep step, Boolean[] isLoadStory) {
         try {
             Module module = ModuleUtilCore.findModuleForPsiElement(step);
             GlobalSearchScope searchScope = module.getModuleWithDependenciesAndLibrariesScope(true);
@@ -79,6 +79,8 @@ public final class JBehaveStepsIndex {
             String stepText = step.getStepText();
             PsiElement story = null;
             if (stepText.contains("загрузить историю")) {
+                if (isLoadStory != null)
+                    isLoadStory[0] = true;
                 String[] textSplited = stepText.split("/");
                 String storyName = textSplited[textSplited.length - 1];
                 textSplited = null;
@@ -96,6 +98,8 @@ public final class JBehaveStepsIndex {
                     return null;
                 story = ((StoryFile) psiFiles[0]).getStory();
             } else if (stepText.contains("История ->") || stepText.contains("история ->")) {
+                if (isLoadStory != null)
+                    isLoadStory[0] = true;
                 String[] textSplited = stepText.split("->");
                 String storyName = textSplited[textSplited.length - 1].trim();
                 textSplited = null;

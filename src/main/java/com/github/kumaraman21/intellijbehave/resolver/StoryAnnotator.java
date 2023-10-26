@@ -44,8 +44,19 @@ public class StoryAnnotator implements Annotator {
 
         StepPsiReference reference = (StepPsiReference) references[0];
         JavaStepDefinition definition = reference.resolveToDefinition();
+        Boolean[] isLoadStory = new Boolean[1];
+        isLoadStory[0] = false;
+        PsiElement storyStepDefinition = reference.resolveToDefinitionStory(isLoadStory);
 
-        if (definition == null) {
+        if (storyStepDefinition != null || isLoadStory[0]) {
+            if (storyStepDefinition != null)
+                annotateStory(step, storyStepDefinition, annotationHolder);
+            else
+                annotationHolder.newAnnotation(HighlightSeverity.ERROR, "Load step found, but failed to find unique story to load")
+                        .range(psiElement)
+                        .create();
+        }
+        else if (definition == null) {
             annotationHolder.newAnnotation(HighlightSeverity.ERROR, "No definition found for the step")
                     .range(psiElement)
                     .create();
@@ -69,5 +80,13 @@ public class StoryAnnotator implements Annotator {
             }
             offset += length;
         }
+    }
+
+    private void annotateStory(JBehaveStep step, PsiElement storyStepDefinition, AnnotationHolder annotationHolder) {
+        int offset = step.getTextOffset();
+        int length = step.getStepText().length();
+        annotationHolder.newAnnotation(HighlightSeverity.INFORMATION, "Story from file " + storyStepDefinition.getContainingFile().getName())
+                //.range(TextRange.from(offset, length))
+                .create();
     }
 }
