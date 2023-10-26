@@ -98,6 +98,13 @@ public final class JBehaveStepsIndex {
             } else if (stepText.contains("История ->") || stepText.contains("история ->")) {
                 String[] textSplited = stepText.split("->");
                 String storyName = textSplited[textSplited.length - 1].trim();
+                textSplited = null;
+                if (storyName.contains(" с Examples"))
+                    textSplited = storyName.split(" с Examples");
+                else if (storyName.contains(" с examples"))
+                    textSplited = storyName.split(" с examples");
+                if (textSplited != null)
+                    storyName = textSplited[0];
                 if (!storyName.contains(".story"))
                     storyName += ".story";
                 Project project = module.getProject();
